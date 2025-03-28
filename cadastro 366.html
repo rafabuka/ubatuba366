@@ -1,0 +1,353 @@
+<!doctype html>
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Hospedes - Pousada</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 80%;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+        }
+        label {
+            display: block;
+            margin: 8px 0;
+        }
+        input[type="text"], input[type="date"], input[type="tel"], input[type="number"], button {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0 15px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .historico {
+            margin-top: 20px;
+        }
+        .search {
+            margin-top: 20px;
+        }
+        .cliente-info {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Cadastro de Hospedes</h2>
+
+    <form id="formCadastro">
+        <label for="nome">Nome Completo:</label>
+        <input type="text" id="nome" name="nome" required>
+
+        <label for="cpf">CPF ou RG:</label>
+        <input type="text" id="cpf" name="cpf" required>
+
+        <label for="endereco">Endereço:</label>
+        <input type="text" id="endereco" name="endereco" required>
+
+        <label for="whatsapp">WhatsApp:</label>
+        <input type="tel" id="whatsapp" name="whatsapp" required>
+
+        <h3>Datas de Hospedagem</h3>
+        <label for="dataEntrada">Data de Entrada:</label>
+        <input type="date" id="dataEntrada" required>
+
+        <label for="horaEntrada">Hora de Entrada:</label>
+        <input type="text" id="horaEntrada" placeholder="Ex: 14:00" required>
+
+        <label for="dataSaida">Data de Saída:</label>
+        <input type="date" id="dataSaida" required>
+
+        <label for="horaSaida">Hora de Saída:</label>
+        <input type="text" id="horaSaida" placeholder="Ex: 12:00" required>
+
+        <label for="numeroQuarto">Número do Quarto (1 a 10):</label>
+        <input type="number" id="numeroQuarto" name="numeroQuarto" min="1" max="10" required>
+
+        <button type="button" onclick="adicionarHospedagem()">Adicionar Hospedagem</button>
+
+        <button type="submit">Cadastrar Cliente</button>
+    </form>
+
+    <div class="historico">
+        <h3>Histórico de Hospedagens:</h3>
+        <ul id="historicoHospedagens"></ul>
+    </div>
+
+    <div class="search">
+        <h3>Buscar Cliente por CPF, Nome ou Intervalo de Datas:</h3>
+
+        <label for="cpfNomeBusca">Buscar por CPF ou Nome:</label>
+        <input type="text" id="cpfNomeBusca" placeholder="Digite CPF ou Nome">
+        <button onclick="buscarPorCPFouNome()">Buscar</button>
+
+        <br><br>
+
+        <label for="dataInicioBusca">Data Início (opcional):</label>
+        <input type="date" id="dataInicioBusca">
+
+        <label for="dataFimBusca">Data Fim (opcional):</label>
+        <input type="date" id="dataFimBusca">
+        
+        <button onclick="buscarClientesPorData()">Buscar por Data</button>
+        <ul id="resultadoBusca"></ul>
+    </div>
+
+    <div class="cliente-info" id="clienteInfo"></div>
+</div>
+
+<script>
+    // Função para pegar os dados do localStorage ou inicializar com um array vazio
+    function obterClientes() {
+        return JSON.parse(localStorage.getItem('clientes')) || [];
+    }
+
+    // Função para salvar os dados no localStorage
+    function salvarClientes(clientes) {
+        localStorage.setItem('clientes', JSON.stringify(clientes));
+    }
+
+    let clientes = obterClientes();  // Carregar os clientes ao iniciar a página
+
+    let clienteSelecionado = null;  // Variável para armazenar o cliente que está sendo editado
+
+    // Função para adicionar uma nova hospedagem
+    function adicionarHospedagem() {
+        if (!clienteSelecionado) {
+            alert('Por favor, selecione um cliente para adicionar a hospedagem.');
+            return;
+        }
+
+        const dataEntrada = document.getElementById("dataEntrada").value;
+        const horaEntrada = document.getElementById("horaEntrada").value;
+        const dataSaida = document.getElementById("dataSaida").value;
+        const horaSaida = document.getElementById("horaSaida").value;
+        const numeroQuarto = document.getElementById("numeroQuarto").value;
+
+        // Verificando se os campos de data e hora foram preenchidos
+        if (!dataEntrada || !horaEntrada || !dataSaida || !horaSaida || !numeroQuarto) {
+            alert("Por favor, preencha todas as informações de entrada, saída e número do quarto.");
+            return;
+        }
+
+        const novaHospedagem = {
+            dataEntrada: dataEntrada,
+            horaEntrada: horaEntrada,
+            dataSaida: dataSaida,
+            horaSaida: horaSaida,
+            numeroQuarto: numeroQuarto
+        };
+
+        // Adiciona a nova hospedagem no histórico do cliente
+        clienteSelecionado.hospedagens.push(novaHospedagem);
+        
+        // Salva os dados atualizados no localStorage
+        salvarClientes(clientes);
+
+        // Atualiza a exibição do histórico de hospedagens
+        exibirHistorico(clienteSelecionado);
+
+        alert('Hospedagem adicionada com sucesso!');
+    }
+
+    // Exibir o histórico de hospedagem de um cliente
+    function exibirHistorico(cliente) {
+        const ul = document.getElementById('historicoHospedagens');
+        ul.innerHTML = ''; // Limpa os itens anteriores
+
+        if (cliente && cliente.hospedagens) {
+            cliente.hospedagens.forEach(hospedagem => {
+                const li = document.createElement('li');
+                li.textContent = `Entrada: ${hospedagem.dataEntrada} às ${hospedagem.horaEntrada} - Saída: ${hospedagem.dataSaida} às ${hospedagem.horaSaida} - Quarto: ${hospedagem.numeroQuarto}`;
+                ul.appendChild(li);
+            });
+        }
+    }
+
+    // Função para buscar clientes por intervalo de datas
+    function buscarClientesPorData() {
+        const dataInicioBusca = document.getElementById("dataInicioBusca").value;
+        const dataFimBusca = document.getElementById("dataFimBusca").value;
+
+        const resultadoBusca = document.getElementById("resultadoBusca");
+        resultadoBusca.innerHTML = ''; // Limpa a busca anterior
+
+        // Verifica se ao menos um campo foi preenchido
+        if (!dataInicioBusca || !dataFimBusca) {
+            resultadoBusca.innerHTML = "<li>Por favor, insira um intervalo de datas válido.</li>";
+            return;
+        }
+
+        // Converte as datas para objetos Date
+        const dataInicio = new Date(dataInicioBusca);
+        const dataFim = new Date(dataFimBusca);
+
+        const clientesNoIntervalo = [];
+
+        // Filtra os clientes que têm hospedagens dentro do intervalo de datas
+        clientes.forEach(cliente => {
+            cliente.hospedagens.forEach(hospedagem => {
+                const dataEntrada = new Date(hospedagem.dataEntrada);
+                const dataSaida = new Date(hospedagem.dataSaida);
+
+                // Verifica se a hospedagem está dentro do intervalo
+                if ((dataEntrada >= dataInicio && dataEntrada <= dataFim) || (dataSaida >= dataInicio && dataSaida <= dataFim)) {
+                    if (!clientesNoIntervalo.includes(cliente)) {
+                        clientesNoIntervalo.push(cliente);
+                    }
+                }
+            });
+        });
+
+        // Exibe os resultados
+        if (clientesNoIntervalo.length === 0) {
+            resultadoBusca.innerHTML = "<li>Nenhum cliente encontrado para o intervalo de datas.</li>";
+        } else {
+            clientesNoIntervalo.forEach(cliente => {
+                const li = document.createElement('li');
+                li.textContent = `${cliente.nome} - CPF: ${cliente.cpf}`;
+                li.onclick = function() {
+                    mostrarDetalhesCliente(cliente);
+                };
+                resultadoBusca.appendChild(li);
+            });
+        }
+    }
+
+    // Função para buscar clientes por CPF ou Nome
+    function buscarPorCPFouNome() {
+        const cpfNomeBusca = document.getElementById("cpfNomeBusca").value.toLowerCase();
+        const resultadoBusca = document.getElementById("resultadoBusca");
+        resultadoBusca.innerHTML = ''; // Limpa a busca anterior
+
+        if (!cpfNomeBusca) {
+            resultadoBusca.innerHTML = "<li>Por favor, insira um CPF ou Nome para buscar.</li>";
+            return;
+        }
+
+        const clientesEncontrados = clientes.filter(cliente =>
+            cliente.nome.toLowerCase().includes(cpfNomeBusca) || cliente.cpf.includes(cpfNomeBusca)
+        );
+
+        if (clientesEncontrados.length === 0) {
+            resultadoBusca.innerHTML = "<li>Nenhum cliente encontrado.</li>";
+        } else {
+            clientesEncontrados.forEach(cliente => {
+                const li = document.createElement('li');
+                li.textContent = `${cliente.nome} - CPF: ${cliente.cpf}`;
+                li.onclick = function() {
+                    mostrarDetalhesCliente(cliente);
+                };
+                resultadoBusca.appendChild(li);
+            });
+        }
+    }
+
+    // Mostrar todas as informações do cliente quando ele for encontrado
+    function mostrarDetalhesCliente(cliente) {
+        const clienteInfo = document.getElementById("clienteInfo");
+        clienteSelecionado = cliente;  // Armazena o cliente selecionado
+        clienteInfo.innerHTML = `
+            <h3>Informações do Cliente:</h3>
+            <p><strong>Nome:</strong> ${cliente.nome}</p>
+            <p><strong>CPF:</strong> ${cliente.cpf}</p>
+            <p><strong>Endereço:</strong> ${cliente.endereco}</p>
+            <p><strong>WhatsApp:</strong> ${cliente.whatsapp}</p>
+            <h4>Histórico de Hospedagens:</h4>
+            <ul>
+                ${cliente.hospedagens.map(hospedagem => `
+                    <li>Entrada: ${hospedagem.dataEntrada} às ${hospedagem.horaEntrada} - Saída: ${hospedagem.dataSaida} às ${hospedagem.horaSaida} - Quarto: ${hospedagem.numeroQuarto}</li>
+                `).join('')}
+            </ul>
+            <button onclick="adicionarHospedagem()">Adicionar Hospedagem</button>
+        `;
+        
+        // Exibe o histórico de hospedagem ao mostrar o cliente
+        exibirHistorico(cliente);
+    }
+
+    // Ao submeter o formulário, salva os dados e exibe o histórico
+    document.getElementById('formCadastro').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const nome = document.getElementById("nome").value;
+        const cpf = document.getElementById("cpf").value;
+        const endereco = document.getElementById("endereco").value;
+        const whatsapp = document.getElementById("whatsapp").value;
+        const dataEntrada = document.getElementById("dataEntrada").value;
+        const horaEntrada = document.getElementById("horaEntrada").value;
+        const dataSaida = document.getElementById("dataSaida").value;
+        const horaSaida = document.getElementById("horaSaida").value;
+        const numeroQuarto = document.getElementById("numeroQuarto").value;
+
+        const novaHospedagem = {
+            dataEntrada: dataEntrada,
+            horaEntrada: horaEntrada,
+            dataSaida: dataSaida,
+            horaSaida: horaSaida,
+            numeroQuarto: numeroQuarto
+        };
+
+        // Verifica se o cliente já existe
+        let clienteExistente = clientes.find(cliente => cliente.cpf === cpf);
+
+        if (clienteExistente) {
+            clienteExistente.hospedagens.push(novaHospedagem);
+        } else {
+            // Se o cliente não existir, cria um novo cliente
+            clientes.push({
+                nome,
+                cpf,
+                endereco,
+                whatsapp,
+                hospedagens: [novaHospedagem]
+            });
+        }
+
+        // Salva os dados no localStorage
+        salvarClientes(clientes);
+
+        alert('Cliente cadastrado com sucesso!');
+
+        // Limpa o formulário após o cadastro
+        document.getElementById('formCadastro').reset();
+
+        // Atualiza a exibição do histórico de hospedagens
+        if (clienteExistente) {
+            exibirHistorico(clienteExistente);
+        } else {
+            exibirHistorico(clientes[clientes.length - 1]);
+        }
+    });
+</script>
+
+</body>
+</html>
