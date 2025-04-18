@@ -1,0 +1,117 @@
+<!doctype html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Calculadora de Valores</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+      max-width: 600px;
+    }
+    label, input {
+      display: block;
+      margin: 10px 0;
+    }
+    input[type="number"], input[type="time"], input[type="date"] {
+      width: 100%;
+      padding: 8px;
+    }
+    #total {
+      margin-top: 20px;
+      font-size: 1.4em;
+      font-weight: bold;
+      color: green;
+    }
+    #info-desconto {
+      margin-top: 10px;
+      font-size: 1em;
+      color: red;
+      font-weight: bold;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>Simule o Valor da Reserva UBATUBA366</h1>
+
+  <label for="dataEntrada">Data da Entrada: Limite minimo de dias (2)</label>
+  <input type="date" id="dataEntrada">
+
+  <label for="entrada">Horário de Entrada:</label>
+  <input type="time" id="entrada" value="12:00">
+
+  <label for="dataSaida">Data da Saída:</label>
+  <input type="date" id="dataSaida">
+
+  <label for="saida">Horário de Saída:</label>
+  <input type="time" id="saida" value="11:00">
+
+  <label for="pessoas">Número de Pessoas: Limite Maximo (5)</label>
+  <input type="number" id="pessoas" min="1">
+
+  <div id="total">Total a pagar: R$ 0,00</div>
+  <div id="info-desconto">
+    Este valor ainda pode ter DESCONTO, confirmar com o anfitrião. E não se aplica a feriados ou temporada.  WATSAPP OFICIAL: (12) 99789-7061
+  </div>
+
+  <script>
+    const entradaInput = document.getElementById('entrada');
+    const saidaInput = document.getElementById('saida');
+    const dataEntradaInput = document.getElementById('dataEntrada');
+    const dataSaidaInput = document.getElementById('dataSaida');
+    const pessoasInput = document.getElementById('pessoas');
+    const totalDiv = document.getElementById('total');
+    const descontoInfo = document.getElementById('info-desconto');
+
+    const calcularValor = () => {
+      const dataEntrada = new Date(dataEntradaInput.value);
+      const dataSaida = new Date(dataSaidaInput.value);
+      const entradaHora = entradaInput.value;
+      const saidaHora = saidaInput.value;
+      let pessoas = parseInt(pessoasInput.value) || 0;
+
+      if (!dataEntradaInput.value || !dataSaidaInput.value || pessoas === 0) {
+        totalDiv.textContent = `Total a pagar: R$ 0,00`;
+        descontoInfo.style.display = 'none';
+        return;
+      }
+
+      // Calcular diferença em milissegundos e converter para dias
+      let diffTime = dataSaida - dataEntrada;
+      let dias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (dias < 1) dias = 1;
+
+      // Aplicar regra de horários
+      if (entradaHora && entradaHora < "12:00") {
+        dias += 1;
+      }
+
+      if (saidaHora && saidaHora > "11:00") {
+        dias += 1;
+      }
+
+      // Mínimo de 2 dias
+      if (dias < 2) dias = 2;
+
+      // Regra de pessoas
+      if (pessoas === 1 || pessoas === 2) {
+        pessoas = 2;
+      }
+
+      const total = pessoas * 50 * dias;
+
+      totalDiv.textContent = `Total a pagar: R$ ${total.toFixed(2).replace('.', ',')}`;
+      descontoInfo.style.display = 'block';
+    };
+
+    entradaInput.addEventListener('change', calcularValor);
+    saidaInput.addEventListener('change', calcularValor);
+    dataEntradaInput.addEventListener('change', calcularValor);
+    dataSaidaInput.addEventListener('change', calcularValor);
+    pessoasInput.addEventListener('input', calcularValor);
+  </script>
+</body>
+</html>
