@@ -1,0 +1,323 @@
+<!doctype html>
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contrato de Locação Temporária</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 40px;
+    }
+    h1, h2, h3 {
+      text-align: center;
+    }
+    .contract-content {
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    label {
+      font-weight: bold;
+    }
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    input[type="time"] {
+      width: 100%;
+      padding: 8px;
+      margin: 5px 0;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    input[readonly] {
+      background-color: #e9e9e9;
+    }
+    #contract-output {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #f7f7f7;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      display: none;
+    }
+    button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+  </style>
+  <!-- jsPDF via CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <h1>CONTRATO DE LOCAÇÃO TEMPORÁRIA</h1>
+  <p class="contract-content">
+    As partes, abaixo qualificadas, ajustam o presente instrumento particular de locação para temporada, nos moldes do Código Civil e da Lei Federal nº 8.245/91, do seguinte imóvel, cláusulas e condições:
+    LOCADORA: CLAUDIA DA SILVA ALBUQUERQUE, brasileira, casada, portadora do RG: 32.991.052-8, residente na Rua Orlando Carneiro, 366 Centro – Cidade de Ubatuba – São Paulo – CEP: 11690-063  
+  </p>
+
+  <!-- Dados do Locatário -->
+  <p class="contract-content">
+    <strong>LOCATÁRIO(A)</strong><br>
+    <label class="field-label" for="nome-locatario">Nome:</label>
+    <input type="text" id="nome-locatario" placeholder="Digite o nome do locatário" /><br>
+    <label class="field-label" for="rg-locatario">RG:</label>
+    <input type="text" id="rg-locatario" placeholder="Digite o RG do locatário" /><br>
+    <label class="field-label" for="cpf-locatario">CPF:</label>
+    <input type="text" id="cpf-locatario" placeholder="Digite o CPF do locatário" /><br>
+    <label class="field-label" for="endereco-locatario">Endereço:</label>
+    <input type="text" id="endereco-locatario" placeholder="Digite o endereço do locatário" /><br>
+    <label class="field-label" for="whatsapp-locatario">Contato WhatsApp:</label>
+    <input type="text" id="whatsapp-locatario" placeholder="Digite o WhatsApp do locatário" /><br>
+  </p>
+
+  <!-- Cláusulas do Contrato -->
+  <p class="contract-content">
+    <strong>CLÁUSULA PRIMEIRA</strong><br>
+    <span>
+      O presente instrumento tem como objeto a locação de temporada de uma kitnet imóvel: Rua Orlando Carneiro, 366 Centro – Ubatuba – S.P<br>
+      IMÓVEL OBJETO DO CONTRATO: kitnet – COM TV - MESA DE JANTAR - COZINHA BÁSICA COMPLETA – 1 VAGA DE GARAGEM (ROTATIVA) COM ACOMODAÇÕES PARA 05 PESSOAS – SITUADA NA RUA ORLANDO CARNEIRO, 366 CENTRO – Ubatuba – S.P
+    </span>
+  </p>
+
+  <p class="contract-content">
+    <strong>CLÁUSULA SEGUNDA</strong><br>
+    O prazo da locação do presente instrumento será, a partir <input type="time" id="inicio-hora" /> do dia <input type="date" id="inicio-data" />, terminando <input type="time" id="fim-hora" /> do dia <input type="date" id="fim-data" />. 
+    Momento em que o LOCATÁRIO (A) obriga-se a restituir o imóvel locado, completamente desocupado.
+  </p>
+	
+	<p class="contract-content">
+    <strong>CLÁUSULA QUARTA</strong><br>
+    A diária estabelecida é para o número máximo de <input type="number" id="numero-pessoas" placeholder="--" /> pessoas, sendo EXPRESSAMENTE proibido esse limite ser ultrapassado sem prévia comunicação e autorização por escrito do LOCADOR.<br><br>
+    <strong>PARÁGRAFO PRIMEIRO</strong><br>
+    Caso seja constatado que o LOCATÁRIO (A) descumpriu o limite máximo de pessoas estipulado, ensejará em multa de uma ou mais diárias por pessoa adicional, rescindindo, ainda, o contrato, perdendo o LOCATÁRIO (A) todas as diárias pagas.
+  </p>
+
+  <!-- Parte de Valores do Contrato -->
+  <p class="contract-content">
+    <strong>CLÁUSULA TERCEIRA</strong><br>
+    VALOR TOTAL DO CONTRATO: R$<input type="number" id="valor-total" placeholder="0000,00" oninput="calcularValores()"/> (Reais). 
+    O LOCATÁRIO (A) efetuou pagamento da reserva no valor de R$<input type="number" id="valor-reserva" placeholder="0000,00" oninput="calcularValores()"/> (Reais), pago através da chave pix, restando ainda R$<input type="number" id="valor-restante" placeholder="0000,00" readonly/> (Reais) a ser pago na entrada.
+  </p>
+
+  <!-- Exibição dos Valores por Extenso na página -->
+  <div class="contract-content">
+    <h3>Valores por Extenso</h3>
+    <p id="extensoValorTotal"></p>
+    <p id="extensoValorReserva"></p>
+    <p id="extensoValorRestante"></p>
+  </div>
+
+  <!-- Botões para gerar o contrato e exportar -->
+  <button onclick="gerarContrato()">Gerar Contrato</button>
+
+  <div id="contract-output">
+    <h2>Contrato Gerado:</h2>
+    <pre id="final-contract"></pre>
+    <button onclick="gerarPDF()">Gerar PDF</button>
+    <button onclick="gerarDocx()">Gerar DOCX</button>
+  </div>
+
+  <script>
+    // Função para converter números em extenso (até 4 dígitos)
+    function numeroParaExtenso(num) {
+      num = Math.floor(num);
+      const unidades = [
+        '', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove', 
+        'dez', 'onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'
+      ];
+      const dezenas = [
+        '', '', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa'
+      ];
+      const centenas = [
+        '', 'cem', 'duzentos', 'trezentos', 'quatrocentos', 'quinhentos', 'seiscentos', 'setecentos', 'oitocentos', 'novecentos'
+      ];
+      if (num < 20) return unidades[num];
+      else if (num < 100) {
+        return dezenas[Math.floor(num / 10)] + (num % 10 > 0 ? ' e ' + unidades[num % 10] : '');
+      } else if (num < 1000) {
+        return centenas[Math.floor(num / 100)] + (num % 100 > 0 ? ' e ' + numeroParaExtenso(num % 100) : '');
+      } else if (num < 10000) {
+        return unidades[Math.floor(num / 1000)] + ' mil' + (num % 1000 > 0 ? ' e ' + numeroParaExtenso(num % 1000) : '');
+      }
+      return num; // Para números maiores, retorna o número
+    }
+
+    // Função que calcula os valores e atualiza os campos de valor restante e os textos por extenso
+    function calcularValores() {
+      let valorTotal = parseFloat(document.getElementById('valor-total').value) || 0;
+      let valorReserva = parseFloat(document.getElementById('valor-reserva').value) || 0;
+      let valorRestante = valorTotal - valorReserva;
+      
+      document.getElementById('valor-restante').value = valorRestante.toFixed(2);
+      
+      document.getElementById('extensoValorTotal').textContent = "Valor Total do Contrato (por extenso): " + numeroParaExtenso(valorTotal).toUpperCase() + " REAIS";
+      document.getElementById('extensoValorReserva').textContent = "Valor da Reserva (por extenso): " + numeroParaExtenso(valorReserva).toUpperCase() + " REAIS";
+      document.getElementById('extensoValorRestante').textContent = "Valor Restante (por extenso): " + numeroParaExtenso(valorRestante).toUpperCase() + " REAIS";
+    }
+
+    // Função para montar e exibir o contrato com as informações preenchidas, incluindo os valores por extenso
+    function gerarContrato() {
+      const nomeLocatario = document.getElementById('nome-locatario').value;
+      const rgLocatario = document.getElementById('rg-locatario').value;
+      const cpfLocatario = document.getElementById('cpf-locatario').value;
+      const enderecoLocatario = document.getElementById('endereco-locatario').value;
+      const whatsappLocatario = document.getElementById('whatsapp-locatario').value;
+      const inicioData = document.getElementById('inicio-data') ? document.getElementById('inicio-data').value : '';
+      const inicioHora = document.getElementById('inicio-hora') ? document.getElementById('inicio-hora').value : '';
+      const fimData = document.getElementById('fim-data') ? document.getElementById('fim-data').value : '';
+      const fimHora = document.getElementById('fim-hora') ? document.getElementById('fim-hora').value : '';
+      const valorTotal = document.getElementById('valor-total') ? document.getElementById('valor-total').value : '';
+      const valorReserva = document.getElementById('valor-reserva') ? document.getElementById('valor-reserva').value : '';
+      const valorRestante = document.getElementById('valor-restante') ? document.getElementById('valor-restante').value : '';
+      const numeroPessoas = document.getElementById('numero-pessoas') ? document.getElementById('numero-pessoas').value : '';
+
+      // Calculando os valores por extenso novamente para incluir no contrato gerado
+      const extensoValorTotal = "Valor Total (por extenso): " + numeroParaExtenso(parseFloat(valorTotal)||0).toUpperCase() + " REAIS";
+      const extensoValorReserva = "Valor da Reserva (por extenso): " + numeroParaExtenso(parseFloat(valorReserva)||0).toUpperCase() + " REAIS";
+      const extensoValorRestante = "Valor Restante (por extenso): " + numeroParaExtenso(parseFloat(valorRestante)||0).toUpperCase() + " REAIS";
+
+      const contrato = `
+CONTRATO DE LOCAÇÃO TEMPORÁRIA
+
+As partes abaixo qualificadas ajustam o presente instrumento particular de locação para temporada, nos moldes do Código Civil e da Lei Federal nº 8.245/91, do seguinte imóvel, cláusulas e condições:
+
+LOCADORA:
+CLAUDIA DA SILVA ALBUQUERQUE, brasileira, casada, portadora do RG: 32.991.052-8, residente na Rua Orlando Carneiro, 366 Centro – Cidade de Ubatuba – São Paulo – CEP: 11690-063
+
+LOCATÁRIO (A):
+Nome: ${nomeLocatario}
+RG: ${rgLocatario}
+CPF: ${cpfLocatario}
+Endereço: ${enderecoLocatario}
+Contato WhatsApp: ${whatsappLocatario}
+
+CLÁUSULA PRIMEIRA:
+O presente instrumento tem como objeto a locação de temporada de uma kitnet imóvel: Rua Orlando carneiro, 366 Centro Ubatuba S.P
+
+IMÓVEL OBJETO DO CONTRATO:
+Kitnet – COM TV - MESA DE JANTAR - COZINHA BÁSICA COMPLETA – 1 VAGA DE GARAGEM (ROTATIVA) COM ACOMODAÇÕES PARA 05 PESSOAS – 
+
+CLÁUSULA SEGUNDA:
+O prazo da locação do presente instrumento será, a partir das ${inicioHora} do dia ${inicioData}, terminando às ${fimHora} do dia ${fimData}. Momento em que o LOCATÁRIO (A) obriga-se a restituir o imóvel locado, completamente desocupado. Caso não o faça, cumpre-se a clausula DECIMA PRIMEIRA. 
+OBS: CONSIDERE A LEITURA DA DATA EM ANO MES DIA.
+
+CLÁUSULA TERCEIRA:
+VALOR TOTAL DO CONTRATO: R$${valorTotal} (Reais).
+${extensoValorTotal}
+O LOCATÁRIO (A) efetuou pagamento da reserva no valor de R$${valorReserva} (Reais).
+${extensoValorReserva}
+Restando ainda R$${valorRestante} (Reais) a ser pago na entrada.
+${extensoValorRestante}
+
+CLÁUSULA QUARTA:
+A diária estabelecida é para o número máximo de ${numeroPessoas} pessoas, sendo EXPRESSAMENTE proibido esse limite ser ultrapassado sem prévia comunicação e autorização por escrito do LOCADOR.
+
+PARÁGRAFO PRIMEIRO:
+Caso seja constatado que o LOCATÁRIO (A) descumpriu o limite máximo de pessoas estipulado, ensejará em multa de uma ou mais diárias por pessoa adicional, rescindindo, ainda, o contrato, perdendo o LOCATÁRIO (A) todas as diárias pagas.
+
+PARÁGRAFO SEGUNDO:
+Para configuração da presente cláusula, só é preciso estar no imóvel o número superior de pessoas pactuado, independente de ser visita ou não, ainda que estas não pernoitem no local.
+
+CLÁUSULA QUINTA
+O LOCATÁRIO (A) deverá se atentar para as seguintes regras para Kitinet:
+a) Os hóspedes devem trazer roupa de cama, toalhas, itens de higiene pessoal (sabonete, shampoo, papel higiênico) e produtos de limpeza (como detergente).
+b) Não é permitido qualquer alteração ou modificação do imóvel, ao qual deverá ser devolvido ao LOCADOR no perfeito estado em que foi entregue, com os utensílios em perfeitas condições.
+c) Manter a casa em ordem e limpa e recolher o lixo sempre que necessário, para na entrega estar tudo nos devidos lugares assim como recebeu.
+d) Manter as luzes, e aparelhos desligados ao sair de casa, manter o registro do gás fechado sempre que não esteja fazendo uso do fogão, manter também chuveiro e torneiras fechadas, sempre que não esteja em uso, e obedecer o racionamento de água (caso ocorra).
+e) Obedecer a Lei do Silêncio, e não fazer também uso de som, podendo ocasionar em multa municipal, ou rescindindo, ainda, o contrato, perdendo o LOCATÁRIO (A) todas as diárias pagas.
+f) Não fumar no interior da kitnet.
+g) Não é permitido lavar o carro.
+h) Não é permitido riscar portas, paredes, móveis e etc.
+i) Não é permitido pular na cama, colchão ou beliche.
+j) Não é permitido pet, como citado na cláusula oitava.
+k) Ao abrir o portão esperar o fechamento total para sair de frente do imóvel, e não manter o portão aberto, sem que já esteja saindo.
+L) Tirar areia de praia do corpo, na ducha ou torneira externa antes de entrar no imóvel.
+M) Fazer uso da kitnet e Não fazer uso das demais dependências e corredor, somente para estacionar seu veículo, enquanto o cliente permanecer no local, respeitando a liberação de passagem, caso seja necessário, e não deixar crianças brincando nesses locais.
+N) Sobre tudo para manter a ordem de um ambiente familiar, é expressamente proibido brigas ou discussões acaloradas de qualquer tipo, caso aconteça, estará rescindindo o contrato, perdendo o LOCATÁRIO (A) todas as diárias pagas.
+
+
+CLÁUSULA SEXTA
+Se durante o prazo de locação forem encontrados problemas pelo LOCATÁRIO (A) com a utilização de utensílios ou defeitos nas instalações, o LOCADOR compromete-se a solucionar os problemas dentro de 72 (setenta e duas) horas, contados a partir da comunicação do problema. Caso venha faltar, água, luz, internet ou TV por assinatura no imóvel, o Locador nada poderá fazer, desde que seja problema de fornecimento das empresas responsáveis, tais como Sabesp, Elektro e Claro.
+
+CLÁUSULA SÉTIMA
+Caso haja qualquer dano ou prejuízo após feita a vistoria no último dia da locação, deverá o LOCATÁRIO (A) imediatamente pagar a diferença ao locador, quando da desocupação do imóvel e devolução das chaves, e controle do portão, nos termos do art. 37, I da Lei Federal 8.245/91.
+
+CLÁUSULA OITAVA
+Fica expressamente e definitivamente proibido ao LOCATÁRIO (A), sob pena de rescisão contratual e consequente despejo, manter no imóvel qualquer tipo de animal, ainda que doméstico, caso este não seja comunicado e permitido por escrito pelo responsável.
+
+CLÁUSULA NONA
+O LOCATÁRIO (A) será responsável por qualquer multa que der causa por desrespeito as Leis Federais, Estaduais, Municipais, normas de autarquias ou regulamento interno do prédio, se houver.
+
+CLÁUSULA DÉCIMA
+O LOCATÁRIO (A) responderá pelo incêndio do imóvel, se não provar caso fortuito, força maior ou propagação de outro imóvel, em conformidade com o artigo 1.208 e seu parágrafo único do Código Civil. Vindo, ainda, o presente contrato a ser rescindido de pleno direito, independentemente de notificação.
+
+CLÁUSULA DÉCIMA PRIMEIRA
+O descumprimento de qualquer das cláusulas do presente contrato, ensejará a sua rescisão, perdendo o LOCATÁRIO (A) as diárias pagas, ficando autorizado o LOCADOR a tomar a posse do referido imóvel, independentemente do término deste e de procedimento judicial, nos termos do parágrafo primeiro do artigo 1.210 do Código Civil.
+
+CLÁUSULA DÉCIMA SEGUNDA
+Em caso de desistência da presente locação de temporada pelo LOCATÁRIO (A), este perderá todas as diárias pagas, devendo ainda quitar os débitos oriundos da locação, caso haja.
+
+CLÁUSULA DÉCIMA TERCEIRA
+As partes elegem o Foro Regional Comarca de; Ubatuba, para dirimir quaisquer ações que se originem do presente instrumento, renunciando aos de seus domicílios, por mais privilegiado que outro venha ser. 
+
+E por estarem justos, deve-se ler, e estando de acordo, envia pelo WhatsApp a seguinte mensagem -- OK4 -- e somente após está mensagem, com o pagamento da reserva, concluirá, garantindo assim sua acomodação.
+.
+      `;
+      document.getElementById('final-contract').textContent = contrato;
+      document.getElementById('contract-output').style.display = 'block';
+    }
+
+    // Função para gerar PDF com quebra automática de página
+    function gerarPDF() {
+      const contrato = document.getElementById('final-contract').textContent;
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const margin = 10;
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      const maxWidth = pageWidth - margin * 2;
+      const lines = doc.splitTextToSize(contrato, maxWidth);
+      const lineHeight = 10;
+      let y = margin;
+
+      lines.forEach(line => {
+        if (y + lineHeight > pageHeight - margin) {
+          doc.addPage();
+          y = margin;
+        }
+        doc.text(line, margin, y);
+        y += lineHeight;
+      });
+      doc.save('contrato.pdf');
+    }
+
+    // Função para gerar DOCX (arquivo HTML compatível com Word)
+    function gerarDocx() {
+      const contrato = document.getElementById('final-contract').textContent;
+      const preHtml = "<html><head><meta charset='utf-8'><title>Contrato</title></head><body>";
+      const posHtml = "</body></html>";
+      const html = preHtml + contrato + posHtml;
+      const blob = new Blob(['\ufeff', html], { type: 'application/msword' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'contrato.doc';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
+
