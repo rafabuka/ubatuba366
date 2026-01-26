@@ -1,0 +1,162 @@
+<!doctype html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Valores</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f7f7f7;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    h1 {
+      font-size: 1.5em;
+      text-align: center;
+      color: #333;
+    }
+
+    label {
+      margin-top: 10px;
+      font-weight: bold;
+      display: block;
+      color: #555;
+    }
+
+    input[type="number"],
+    input[type="time"],
+    input[type="date"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1em;
+    }
+
+    #total {
+      margin-top: 20px;
+      font-size: 1.4em;
+      font-weight: bold;
+      color: green;
+      text-align: center;
+    }
+
+    #info-desconto {
+      margin-top: 10px;
+      font-size: 1em;
+      color: red;
+      font-weight: bold;
+      display: none;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Simule o Valor da Reserva UBATUBA366</h1>
+
+    <label>Data da Entrada (mínimo 2 diárias)</label>
+    <input type="date" id="dataEntrada">
+
+    <label>Horário de Entrada</label>
+    <input type="time" id="entrada" value="12:00">
+
+    <label>Data da Saída</label>
+    <input type="date" id="dataSaida">
+
+    <label>Horário de Saída</label>
+    <input type="time" id="saida" value="11:00">
+
+    <label>Número de Pessoas (máx. 5)</label>
+    <input type="number" id="pessoas" min="1">
+
+    <div id="total">Total a pagar: R$ 0,00</div>
+
+    <div id="info-desconto">
+      Este valor ainda pode ter DESCONTO, confirmar com o anfitrião.<br>
+      Não se aplica a feriados ou temporada.<br>
+      WHATSAPP OFICIAL: (12) 99789-7061
+    </div>
+  </div>
+
+  <script>
+    const entrada = document.getElementById('entrada');
+    const saida = document.getElementById('saida');
+    const dataEntrada = document.getElementById('dataEntrada');
+    const dataSaida = document.getElementById('dataSaida');
+    const pessoasInput = document.getElementById('pessoas');
+    const totalDiv = document.getElementById('total');
+    const descontoInfo = document.getElementById('info-desconto');
+
+    function calcularValor() {
+      if (!dataEntrada.value || !dataSaida.value || !pessoasInput.value) {
+        totalDiv.textContent = 'Total a pagar: R$ 0,00';
+        descontoInfo.style.display = 'none';
+        return;
+      }
+
+      const entradaDate = new Date(dataEntrada.value);
+      const saidaDate = new Date(dataSaida.value);
+
+      // 🔹 Cálculo base por DIÁRIAS
+      let diarias = Math.round(
+        (saidaDate - entradaDate) / (1000 * 60 * 60 * 24)
+      );
+
+      if (diarias < 2) diarias = 2;
+
+      // 🔹 Verifica fim de semana
+      let temFimDeSemana = false;
+      let temp = new Date(entradaDate);
+
+      while (temp < saidaDate) {
+        const d = temp.getDay(); // 0 dom | 5 sex | 6 sáb
+        if (d === 0 || d === 5 || d === 6) {
+          temFimDeSemana = true;
+          break;
+        }
+        temp.setDate(temp.getDate() + 1);
+      }
+
+      // 🔹 Horário só conta se NÃO tiver fim de semana
+      if (!temFimDeSemana) {
+        if (entrada.value < "12:00") diarias += 1;
+        if (saida.value > "11:00") diarias += 1;
+      }
+
+      // 🔹 Fim de semana soma +1 fixa
+      if (temFimDeSemana) diarias += 1;
+
+      let pessoas = parseInt(pessoasInput.value);
+      if (pessoas === 1 || pessoas === 2) pessoas = 2;
+
+      const total = pessoas * 50 * diarias;
+      totalDiv.textContent = `Total a pagar: R$ ${total.toFixed(2).replace('.', ',')}`;
+      descontoInfo.style.display = 'block';
+    }
+
+    entrada.addEventListener('change', calcularValor);
+    saida.addEventListener('change', calcularValor);
+    dataEntrada.addEventListener('change', calcularValor);
+    dataSaida.addEventListener('change', calcularValor);
+    pessoasInput.addEventListener('input', calcularValor);
+  </script>
+</body>
+</html>
