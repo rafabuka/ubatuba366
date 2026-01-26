@@ -1,1 +1,179 @@
 
+<!doctype html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Valores</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f7f7f7;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+
+    h1 {
+      font-size: 1.5em;
+      text-align: center;
+      color: #333;
+    }
+
+    label {
+      margin-top: 10px;
+      font-weight: bold;
+      display: block;
+      color: #555;
+    }
+
+    input[type="number"],
+    input[type="time"],
+    input[type="date"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1em;
+    }
+
+    #total {
+      margin-top: 20px;
+      font-size: 1.4em;
+      font-weight: bold;
+      color: green;
+      text-align: center;
+    }
+
+    #info-desconto {
+      margin-top: 10px;
+      font-size: 1em;
+      color: red;
+      font-weight: bold;
+      display: none;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Simule o Valor da Reserva UBATUBA366</h1>
+
+    <label>Data da Entrada (mínimo 2 dias)</label>
+    <input type="date" id="dataEntrada">
+
+    <label>Horário de Entrada</label>
+    <input type="time" id="entrada" value="14:00">
+
+    <label>Data da Saída</label>
+    <input type="date" id="dataSaida">
+
+    <label>Horário de Saída</label>
+    <input type="time" id="saida" value="13:00">
+
+    <label>Número de Pessoas (máx. 5)</label>
+    <input type="number" id="pessoas" min="1" max="5">
+
+    <div id="total">Total a pagar: R$ 0,00</div>
+
+    <div id="info-desconto">
+      Este valor ainda pode ter DESCONTO, confirmar com o anfitrião.<br>
+      Não se aplica a feriados ou temporada.<br>
+      WHATSAPP OFICIAL: (12) 99789-7061
+    </div>
+  </div>
+
+  <script>
+    const entradaInput = document.getElementById('entrada');
+    const saidaInput = document.getElementById('saida');
+    const dataEntradaInput = document.getElementById('dataEntrada');
+    const dataSaidaInput = document.getElementById('dataSaida');
+    const pessoasInput = document.getElementById('pessoas');
+    const totalDiv = document.getElementById('total');
+    const descontoInfo = document.getElementById('info-desconto');
+
+    /*
+      🔔 AJUSTE GERAL DE VALOR
+      Acréscimo percentual aplicado ao TOTAL.
+      Atualmente: +50%
+    */
+    const ajustePercentualGeral = 0.5;
+
+    /*
+      🔔 AJUSTE SOMENTE NA 2ª PESSOA
+      Acréscimo aplicado APENAS sobre o valor da segunda pessoa.
+      Atualmente: +16,67%
+    */
+    const ajusteSegundaPessoa = 0.1667;
+
+    const valorDiariaPorPessoa = 150;
+
+    const calcularValor = () => {
+      const dataEntrada = new Date(dataEntradaInput.value);
+      const dataSaida = new Date(dataSaidaInput.value);
+      const entradaHora = entradaInput.value;
+      const saidaHora = saidaInput.value;
+      const pessoas = parseInt(pessoasInput.value) || 0;
+
+      if (!dataEntradaInput.value || !dataSaidaInput.value || pessoas === 0) {
+        totalDiv.textContent = 'Total a pagar: R$ 0,00';
+        descontoInfo.style.display = 'none';
+        return;
+      }
+
+      let diffTime = dataSaida - dataEntrada;
+      let dias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      if (dias < 1) dias = 1;
+
+      if (entradaHora < "14:00") dias += 1;
+      if (saidaHora > "13:00") dias += 1;
+      if (dias < 2) dias = 2;
+
+      let totalBase = 0;
+
+      if (pessoas >= 1) {
+        totalBase += valorDiariaPorPessoa * dias;
+      }
+
+      if (pessoas >= 2) {
+        const segundaPessoa =
+          valorDiariaPorPessoa * dias *
+          (1 + ajusteSegundaPessoa);
+        totalBase += segundaPessoa;
+      }
+
+      if (pessoas > 2) {
+        totalBase += (pessoas - 2) * valorDiariaPorPessoa * dias;
+      }
+
+      const totalFinal =
+        totalBase + (totalBase * ajustePercentualGeral);
+
+      totalDiv.textContent =
+        `Total a pagar: R$ ${totalFinal.toFixed(2).replace('.', ',')}`;
+
+      descontoInfo.style.display = 'block';
+    };
+
+    entradaInput.addEventListener('change', calcularValor);
+    saidaInput.addEventListener('change', calcularValor);
+    dataEntradaInput.addEventListener('change', calcularValor);
+    dataSaidaInput.addEventListener('change', calcularValor);
+    pessoasInput.addEventListener('input', calcularValor);
+  </script>
+</body>
+</html>
