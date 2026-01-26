@@ -5,6 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Calculadora de Valores</title>
+
   <style>
     * { box-sizing: border-box; }
 
@@ -103,27 +104,25 @@
     const totalDiv = document.getElementById('total');
     const descontoInfo = document.getElementById('info-desconto');
 
-    const calcularValor = () => {
-      const dataEntrada = new Date(dataEntradaInput.value);
-      const dataSaida = new Date(dataSaidaInput.value);
-      let pessoas = parseInt(pessoasInput.value) || 0;
-
-      if (!dataEntradaInput.value || !dataSaidaInput.value || pessoas === 0) {
+    function calcularValor() {
+      if (!dataEntradaInput.value || !dataSaidaInput.value || !pessoasInput.value) {
         totalDiv.textContent = 'Total a pagar: R$ 0,00';
         descontoInfo.style.display = 'none';
         return;
       }
 
-      let diffTime = dataSaida - dataEntrada;
-      let dias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+      const dataEntrada = new Date(dataEntradaInput.value);
+      const dataSaida = new Date(dataSaidaInput.value);
+
+      let dias = Math.ceil((dataSaida - dataEntrada) / (1000 * 60 * 60 * 24));
       if (dias < 2) dias = 2;
 
-      // REGRA DO FIM DE SEMANA (+1 diária se encostar em sex/sáb/dom)
-      let dataTemp = new Date(dataEntrada);
+      // 🔍 Verifica se encosta em fim de semana
       let temFimDeSemana = false;
+      let dataTemp = new Date(dataEntrada);
 
       while (dataTemp <= dataSaida) {
-        const dia = dataTemp.getDay(); // 0=Dom, 5=Sex, 6=Sáb
+        const dia = dataTemp.getDay(); // 0 dom | 5 sex | 6 sáb
         if (dia === 0 || dia === 5 || dia === 6) {
           temFimDeSemana = true;
           break;
@@ -131,14 +130,22 @@
         dataTemp.setDate(dataTemp.getDate() + 1);
       }
 
+      // 🟦 Horário só conta se NÃO tiver fim de semana
+      if (!temFimDeSemana) {
+        if (entradaInput.value < "12:00") dias += 1;
+        if (saidaInput.value > "11:00") dias += 1;
+      }
+
+      // 🟥 Fim de semana sempre soma +1
       if (temFimDeSemana) dias += 1;
 
+      let pessoas = parseInt(pessoasInput.value);
       if (pessoas === 1 || pessoas === 2) pessoas = 2;
 
       const total = pessoas * 50 * dias;
       totalDiv.textContent = `Total a pagar: R$ ${total.toFixed(2).replace('.', ',')}`;
       descontoInfo.style.display = 'block';
-    };
+    }
 
     entradaInput.addEventListener('change', calcularValor);
     saidaInput.addEventListener('change', calcularValor);
