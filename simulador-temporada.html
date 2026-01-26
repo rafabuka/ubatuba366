@@ -1,1 +1,62 @@
+<script>
+  const entradaInput = document.getElementById('entrada');
+  const saidaInput = document.getElementById('saida');
+  const dataEntradaInput = document.getElementById('dataEntrada');
+  const dataSaidaInput = document.getElementById('dataSaida');
+  const pessoasInput = document.getElementById('pessoas');
+  const totalDiv = document.getElementById('total');
+  const descontoInfo = document.getElementById('info-desconto');
+
+  const ajustePercentualGeral = 0.5;      // 50%
+  const ajusteSegundaPessoa = 0.1667;     // 16,67%
+
+  const calcularValor = () => {
+    const dataEntrada = new Date(dataEntradaInput.value);
+    const dataSaida = new Date(dataSaidaInput.value);
+    const entradaHora = entradaInput.value;
+    const saidaHora = saidaInput.value;
+
+    const pessoasReais = parseInt(pessoasInput.value) || 0;
+
+    if (!dataEntradaInput.value || !dataSaidaInput.value || pessoasReais === 0) {
+      totalDiv.textContent = 'Total a pagar: R$ 0,00';
+      descontoInfo.style.display = 'none';
+      return;
+    }
+
+    let diffTime = dataSaida - dataEntrada;
+    let dias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    if (dias < 1) dias = 1;
+
+    if (entradaHora && entradaHora < "14:00") dias += 1;
+    if (saidaHora && saidaHora > "13:00") dias += 1;
+    if (dias < 2) dias = 2;
+
+    // 👉 cálculo base
+    let pessoasCobradas = pessoasReais;
+
+    // 1 pessoa paga como 2 (SEM ajuste da segunda pessoa)
+    if (pessoasReais === 1) {
+      pessoasCobradas = 2;
+    }
+
+    let valorBase = pessoasCobradas * 50 * dias;
+
+    // 👉 ajuste SOMENTE quando forem 2 pessoas REAIS
+    if (pessoasReais === 2) {
+      valorBase += valorBase * ajusteSegundaPessoa;
+    }
+
+    const total = valorBase + (valorBase * ajustePercentualGeral);
+
+    totalDiv.textContent = `Total a pagar: R$ ${total.toFixed(2).replace('.', ',')}`;
+    descontoInfo.style.display = 'block';
+  };
+
+  entradaInput.addEventListener('change', calcularValor);
+  saidaInput.addEventListener('change', calcularValor);
+  dataEntradaInput.addEventListener('change', calcularValor);
+  dataSaidaInput.addEventListener('change', calcularValor);
+  pessoasInput.addEventListener('input', calcularValor);
+</script>
 
