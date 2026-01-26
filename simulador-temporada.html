@@ -116,15 +116,11 @@
 
       let diffTime = dataSaida - dataEntrada;
       let dias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      if (dias < 1) dias = 1;
-
-      if (entradaInput.value < "12:00") dias += 1;
-      if (saidaInput.value > "11:00") dias += 1;
       if (dias < 2) dias = 2;
 
-      // 🔥 REGRA DO FIM DE SEMANA
-      let temFimDeSemana = false;
+      // REGRA DO FIM DE SEMANA (+1 diária se encostar em sex/sáb/dom)
       let dataTemp = new Date(dataEntrada);
+      let temFimDeSemana = false;
 
       while (dataTemp <= dataSaida) {
         const dia = dataTemp.getDay(); // 0=Dom, 5=Sex, 6=Sáb
