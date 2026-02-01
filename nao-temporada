@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador de Reserva</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background: #f7f7f7;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,.05);
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 1.4em;
+    }
+
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      font-size: 1em;
+    }
+
+    #total {
+      margin-top: 20px;
+      font-size: 1.4em;
+      font-weight: bold;
+      color: green;
+      text-align: center;
+    }
+
+    #info-desconto {
+      margin-top: 10px;
+      font-size: 1em;
+      color: red;
+      font-weight: bold;
+      text-align: center;
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>NÃO-TEMPORADA</h1>
+
+    <label>Data da Entrada: Limite mínimo de dias (2)</label>
+    <input type="date" id="dataEntrada">
+
+    <label>Horário de Entrada</label>
+    <input type="time" id="entrada" value="14:00">
+
+    <label>Data da Saída</label>
+    <input type="date" id="dataSaida">
+
+    <label>Horário de Saída</label>
+    <input type="time" id="saida" value="13:00">
+
+    <label>Número de Pessoas</label>
+    <input type="number" id="pessoas" min="1">
+
+    <div id="total">Total a pagar: R$ 0,00</div>
+
+    <div id="info-desconto">
+      Este valor ainda pode ter DESCONTO, confirmar com o anfitrião.<br>
+      Não se aplica a feriados ou Datas Especiais.<br>
+      WHATSAPP OFICIAL: (12) 99789-7061
+    </div>
+  </div>
+
+<script>
+  const dataEntradaInput = document.getElementById('dataEntrada');
+  const dataSaidaInput = document.getElementById('dataSaida');
+  const entradaInput = document.getElementById('entrada');
+  const saidaInput = document.getElementById('saida');
+  const pessoasInput = document.getElementById('pessoas');
+  const totalDiv = document.getElementById('total');
+  const descontoInfo = document.getElementById('info-desconto');
+
+  /*
+    🔔 AJUSTE GERAL DE VALOR
+    Ex:
+    0.3 = 30%
+    0.5 = 50%
+  */
+  const ajustePercentualGeral = 0.0;
+
+  /*
+    🔔 DIFERENÇA DA SEGUNDA PESSOA
+    0.1667 = 16,67%
+  */
+  const ajusteSegundaPessoa = 0.1667;
+
+  function calcularValor() {
+
+    if (!dataEntradaInput.value || !dataSaidaInput.value || !pessoasInput.value) {
+      totalDiv.textContent = 'Total a pagar: R$ 0,00';
+      descontoInfo.style.display = 'none';
+      return;
+    }
+
+    const dataEntrada = new Date(dataEntradaInput.value);
+    const dataSaida = new Date(dataSaidaInput.value);
+
+    const diasReais = Math.ceil((dataSaida - dataEntrada) / (1000 * 60 * 60 * 24));
+
+    let diasCobrados = diasReais < 2 ? 2 : diasReais;
+
+    let extrasHorario = 0;
+
+    const entradaAntes = entradaInput.value < "14:00";
+    const saidaDepois = saidaInput.value > "13:00";
+
+    if (diasReais === 1) {
+      // Tem direito a 1 ajuste grátis
+      if (entradaAntes && saidaDepois) {
+        extrasHorario = 1;
+      }
+    } else {
+      // 2 dias ou mais: tudo é extra
+      if (entradaAntes) extrasHorario += 1;
+      if (saidaDepois) extrasHorario += 1;
+    }
+
+    diasCobrados += extrasHorario;
+
+    const pessoasReais = Number(pessoasInput.value);
+    const pessoasCobradas = pessoasReais === 1 ? 2 : pessoasReais;
+
+    let valorBase = pessoasCobradas * 50 * diasCobrados;
+
+    if (pessoasReais === 2) {
+      valorBase += valorBase * ajusteSegundaPessoa;
+    }
+
+    const total = valorBase + (valorBase * ajustePercentualGeral);
+
+    totalDiv.textContent = `Total a pagar: R$ ${total.toFixed(2).replace('.', ',')}`;
+    descontoInfo.style.display = 'block';
+  }
+
+  document.querySelectorAll('input').forEach(el => {
+    el.addEventListener('input', calcularValor);
+    el.addEventListener('change', calcularValor);
+  });
+</script>
+
+</body>
+</html>
