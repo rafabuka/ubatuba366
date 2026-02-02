@@ -46,6 +46,7 @@
       font-weight: bold;
       color: green;
       text-align: center;
+      display: none; /* começa invisível */
     }
 
     #info-desconto {
@@ -54,6 +55,7 @@
       color: red;
       font-weight: bold;
       text-align: center;
+      display: none; /* começa invisível */
     }
 
     #btn-whatsapp {
@@ -98,9 +100,7 @@
     <div id="info-desconto">
       Este valor ainda pode ter DESCONTO, confirmar com o anfitrião.<br>
       Não se aplica a feriados ou Datas Especiais.<br>
-      <a href="https://wa.me/5512997791023" target="_blank" style="color: inherit; text-decoration: underline;">
-        WHATSAPP OFICIAL: (12) 99779-1023
-      </a>
+      WHATSAPP OFICIAL: (12) 99779-1023
     </div>
 
     <button id="btn-whatsapp">Enviar pelo WhatsApp</button>
@@ -113,26 +113,16 @@
   const saidaInput = document.getElementById('saida');
   const pessoasInput = document.getElementById('pessoas');
   const totalDiv = document.getElementById('total');
+  const infoDiv = document.getElementById('info-desconto');
   const btnWhatsApp = document.getElementById('btn-whatsapp');
 
-  /*
-    🔔 AJUSTE GERAL DE VALOR
-    Ex:
-    0.3 = 30%
-    0.5 = 50%
-  */
   const ajustePercentualGeral = 0.5;
-
-  /*
-    🔔 DIFERENÇA DA SEGUNDA PESSOA
-    0.1667 = 16,67%
-  */
   const ajusteSegundaPessoa = 0.1667;
 
   function calcularValor() {
-
     if (!dataEntradaInput.value || !dataSaidaInput.value || !pessoasInput.value) {
-      totalDiv.textContent = 'Total a pagar: R$ 0,00';
+      totalDiv.style.display = 'none';
+      infoDiv.style.display = 'none';
       return;
     }
 
@@ -143,55 +133,38 @@
     let diasCobrados = diasReais < 2 ? 2 : diasReais;
 
     let extrasHorario = 0;
-    const entradaAntes = entradaInput.value < "14:00";
-    const saidaDepois = saidaInput.value > "13:00";
-
-    if (diasReais === 1) {
-      if (entradaAntes && saidaDepois) extrasHorario = 1;
-    } else {
-      if (entradaAntes) extrasHorario += 1;
-      if (saidaDepois) extrasHorario += 1;
-    }
-
+    if (entradaInput.value < "14:00") extrasHorario += 1;
+    if (saidaInput.value > "13:00") extrasHorario += 1;
     diasCobrados += extrasHorario;
 
-    // Número de pessoas
     let pessoasReais = Number(pessoasInput.value);
-    if (!pessoasReais || pessoasReais < 1) pessoasReais = 1; // proteção contra vazio ou zero
+    if (!pessoasReais || pessoasReais < 1) pessoasReais = 1;
 
     const pessoasCobradas = pessoasReais === 1 ? 2 : pessoasReais;
-
     let valorBase = pessoasCobradas * 50 * diasCobrados;
 
-    if (pessoasReais === 2) {
-      valorBase += valorBase * ajusteSegundaPessoa;
-    }
+    if (pessoasReais === 2) valorBase += valorBase * ajusteSegundaPessoa;
 
     const total = valorBase + (valorBase * ajustePercentualGeral);
 
     totalDiv.textContent = Total a pagar: R$ ${total.toFixed(2).replace('.', ',')};
+    totalDiv.style.display = 'block';
+    infoDiv.style.display = 'block';
   }
 
-  // Atualiza valor automaticamente
   document.querySelectorAll('input').forEach(el => {
     el.addEventListener('input', calcularValor);
     el.addEventListener('change', calcularValor);
   });
 
-  // Botão WhatsApp
   btnWhatsApp.addEventListener('click', () => {
-    const dataEntrada = dataEntradaInput.value;
-    const dataSaida = dataSaidaInput.value;
-    const horaEntrada = entradaInput.value;
-    const horaSaida = saidaInput.value;
-    const pessoas = pessoasInput.value || 1;
-    const total = totalDiv.textContent.replace('Total a pagar: ', '');
+    if (totalDiv.style.display === 'none') return; // só envia se já calculou
 
     const mensagem = `Olá! Fiz uma simulação de reserva:
-📅 Entrada: ${dataEntrada} às ${horaEntrada}
-📅 Saída: ${dataSaida} às ${horaSaida}
-👥 Pessoas: ${pessoas}
-💰 Valor total: ${total}
+📅 Entrada: ${dataEntradaInput.value} às ${entradaInput.value}
+📅 Saída: ${dataSaidaInput.value} às ${saidaInput.value}
+👥 Pessoas: ${pessoasInput.value}
+💰 Valor total: ${totalDiv.textContent.replace('Total a pagar: ', '')}
 
 📸 Favor anexar o print do cálculo`;
 
