@@ -54,16 +54,31 @@
       color: red;
       font-weight: bold;
       text-align: center;
-      display: none;
+    }
+
+    #btn-whatsapp {
+      margin-top: 20px;
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background-color: #25D366;
+      color: white;
+      font-size: 1.1em;
+      font-weight: bold;
+      text-align: center;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
     }
   </style>
 </head>
 
 <body>
   <div class="container">
-    <h1>-FORA DA TEMPORADA-</h1>
+    <h1>TEMPORADA</h1>
 
-    <label>Data da Entrada: Limite mínimo de dias (2)</label>
+    <label>Data da Entrada</label>
     <input type="date" id="dataEntrada">
 
     <label>Horário de Entrada</label>
@@ -75,35 +90,21 @@
     <label>Horário de Saída</label>
     <input type="time" id="saida" value="13:00">
 
-    <label>Número de Pessoas: Limite Máximo por Kitnet (5)</label>
+    <label>Número de Pessoas</label>
     <input type="number" id="pessoas" min="1">
 
     <div id="total">Total a pagar: R$ 0,00</div>
 
     <div id="info-desconto">
-  Este valor ainda pode ter DESCONTO, confirmar com o anfitrião.<br>
-  Não se aplica a feriados ou Datas Especiais.<br>
-  <a href="https://wa.me/5512997791023" target="_blank" style="color: inherit; text-decoration: underline;">
-    WHATSAPP OFICIAL: (12) 99779-1023
-  </a>
-</div>
+      Este valor ainda pode ter DESCONTO, confirmar com o anfitrião.<br>
+      Não se aplica a feriados ou Datas Especiais.<br>
+      <a href="https://wa.me/5512997791023" target="_blank" style="color: inherit; text-decoration: underline;">
+        WHATSAPP OFICIAL: (12) 99779-1023
+      </a>
+    </div>
 
-<button id="btnWhatsapp" style="
-  width:100%;
-  margin-top:15px;
-  padding:12px;
-  font-size:1em;
-  background:#25D366;
-  color:#fff;
-  border:none;
-  border-radius:5px;
-  cursor:pointer;
-">
-  Enviar pelo WhatsApp
-</button>
-
-</div>
-
+    <button id="btn-whatsapp">Enviar pelo WhatsApp</button>
+  </div>
 
 <script>
   const dataEntradaInput = document.getElementById('dataEntrada');
@@ -112,7 +113,7 @@
   const saidaInput = document.getElementById('saida');
   const pessoasInput = document.getElementById('pessoas');
   const totalDiv = document.getElementById('total');
-  const descontoInfo = document.getElementById('info-desconto');
+  const btnWhatsApp = document.getElementById('btn-whatsapp');
 
   /*
     🔔 AJUSTE GERAL DE VALOR
@@ -120,48 +121,44 @@
     0.3 = 30%
     0.5 = 50%
   */
-  const ajustePercentualGeral = 0.0;
+  const ajustePercentualGeral = 0.5;
 
   /*
     🔔 DIFERENÇA DA SEGUNDA PESSOA
     0.1667 = 16,67%
   */
-  const ajusteSegundaPessoa = 0.25;
+  const ajusteSegundaPessoa = 0.1667;
 
   function calcularValor() {
 
     if (!dataEntradaInput.value || !dataSaidaInput.value || !pessoasInput.value) {
       totalDiv.textContent = 'Total a pagar: R$ 0,00';
-      descontoInfo.style.display = 'none';
       return;
     }
 
     const dataEntrada = new Date(dataEntradaInput.value);
     const dataSaida = new Date(dataSaidaInput.value);
 
-    const diasReais = Math.ceil((dataSaida - dataEntrada) / (1000 * 60 * 60 * 24));
-
+    let diasReais = Math.ceil((dataSaida - dataEntrada) / (1000 * 60 * 60 * 24));
     let diasCobrados = diasReais < 2 ? 2 : diasReais;
 
     let extrasHorario = 0;
-
     const entradaAntes = entradaInput.value < "14:00";
     const saidaDepois = saidaInput.value > "13:00";
 
     if (diasReais === 1) {
-      // Tem direito a 1 ajuste grátis
-      if (entradaAntes && saidaDepois) {
-        extrasHorario = 1;
-      }
+      if (entradaAntes && saidaDepois) extrasHorario = 1;
     } else {
-      // 2 dias ou mais: tudo é extra
       if (entradaAntes) extrasHorario += 1;
       if (saidaDepois) extrasHorario += 1;
     }
 
     diasCobrados += extrasHorario;
 
-    const pessoasReais = Number(pessoasInput.value);
+    // Número de pessoas
+    let pessoasReais = Number(pessoasInput.value);
+    if (!pessoasReais || pessoasReais < 1) pessoasReais = 1; // proteção contra vazio ou zero
+
     const pessoasCobradas = pessoasReais === 1 ? 2 : pessoasReais;
 
     let valorBase = pessoasCobradas * 50 * diasCobrados;
@@ -172,24 +169,36 @@
 
     const total = valorBase + (valorBase * ajustePercentualGeral);
 
-    totalDiv.textContent = `Total a pagar: R$ ${total.toFixed(2).replace('.', ',')}`;
-    descontoInfo.style.display = 'block';
+    totalDiv.textContent = Total a pagar: R$ ${total.toFixed(2).replace('.', ',')};
   }
 
+  // Atualiza valor automaticamente
   document.querySelectorAll('input').forEach(el => {
     el.addEventListener('input', calcularValor);
     el.addEventListener('change', calcularValor);
   });
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const infoDesconto = document.getElementById("info-desconto");
 
-    if (infoDesconto) {
-      infoDesconto.style.cursor = "pointer";
-      infoDesconto.title = "Confirme condições e possíveis descontos pelo WhatsApp";
-    }
+  // Botão WhatsApp
+  btnWhatsApp.addEventListener('click', () => {
+    const dataEntrada = dataEntradaInput.value;
+    const dataSaida = dataSaidaInput.value;
+    const horaEntrada = entradaInput.value;
+    const horaSaida = saidaInput.value;
+    const pessoas = pessoasInput.value || 1;
+    const total = totalDiv.textContent.replace('Total a pagar: ', '');
+
+    const mensagem = `Olá! Fiz uma simulação de reserva:
+📅 Entrada: ${dataEntrada} às ${horaEntrada}
+📅 Saída: ${dataSaida} às ${horaSaida}
+👥 Pessoas: ${pessoas}
+💰 Valor total: ${total}
+
+📸 Favor anexar o print do cálculo`;
+
+    const urlWhatsApp = https://wa.me/5512997791023?text=${encodeURIComponent(mensagem)};
+    window.open(urlWhatsApp, '_blank');
   });
-</script>
 
+</script>
 </body>
 </html>
