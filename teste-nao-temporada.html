@@ -46,7 +46,6 @@
       font-weight: bold;
       color: green;
       text-align: center;
-      display: none; /* começa invisível */
     }
 
     #info-desconto {
@@ -55,32 +54,30 @@
       color: red;
       font-weight: bold;
       text-align: center;
-      display: none; /* começa invisível */
+      display: none;
     }
 
     #btn-whatsapp {
-      margin-top: 20px;
-      display: block;
-      width: 100%;
+      margin-top: 15px;
       padding: 12px;
-      background-color: #25D366;
-      color: white;
-      font-size: 1.1em;
+      width: 100%;
+      font-size: 1em;
       font-weight: bold;
-      text-align: center;
+      background: #25d366;
+      color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 5px;
       cursor: pointer;
-      text-decoration: none;
+      display: none;
     }
   </style>
 </head>
 
 <body>
   <div class="container">
-    <h1>TEMPORADA</h1>
+    <h1>-FORA DA TEMPORADA-</h1>
 
-    <label>Data da Entrada</label>
+    <label>Data da Entrada: Limite mínimo de dias (2)</label>
     <input type="date" id="dataEntrada">
 
     <label>Horário de Entrada</label>
@@ -92,7 +89,7 @@
     <label>Horário de Saída</label>
     <input type="time" id="saida" value="13:00">
 
-    <label>Número de Pessoas</label>
+    <label>Número de Pessoas: Limite Máximo por Kitnet (5)</label>
     <input type="number" id="pessoas" min="1">
 
     <div id="total">Total a pagar: R$ 0,00</div>
@@ -113,43 +110,66 @@
   const saidaInput = document.getElementById('saida');
   const pessoasInput = document.getElementById('pessoas');
   const totalDiv = document.getElementById('total');
-  const infoDiv = document.getElementById('info-desconto');
+  const descontoInfo = document.getElementById('info-desconto');
   const btnWhatsApp = document.getElementById('btn-whatsapp');
 
-  const ajustePercentualGeral = 0.5;
-  const ajusteSegundaPessoa = 0.1667;
+  /*
+    🔔 AJUSTE GERAL DE VALOR
+    Ex:
+    0.3 = 30%
+    0.5 = 50%
+  */
+  const ajustePercentualGeral = 0.0;
+
+  /*
+    🔔 DIFERENÇA DA SEGUNDA PESSOA
+    0.1667 = 16,67%
+  */
+  const ajusteSegundaPessoa = 0.25;
 
   function calcularValor() {
+
     if (!dataEntradaInput.value || !dataSaidaInput.value || !pessoasInput.value) {
-      totalDiv.style.display = 'none';
-      infoDiv.style.display = 'none';
+      totalDiv.textContent = 'Total a pagar: R$ 0,00';
+      descontoInfo.style.display = 'none';
+      btnWhatsApp.style.display = 'none';
       return;
     }
 
     const dataEntrada = new Date(dataEntradaInput.value);
     const dataSaida = new Date(dataSaidaInput.value);
 
-    let diasReais = Math.ceil((dataSaida - dataEntrada) / (1000 * 60 * 60 * 24));
+    const diasReais = Math.ceil((dataSaida - dataEntrada) / (1000 * 60 * 60 * 24));
     let diasCobrados = diasReais < 2 ? 2 : diasReais;
 
     let extrasHorario = 0;
-    if (entradaInput.value < "14:00") extrasHorario += 1;
-    if (saidaInput.value > "13:00") extrasHorario += 1;
+
+    const entradaAntes = entradaInput.value < "14:00";
+    const saidaDepois = saidaInput.value > "13:00";
+
+    if (diasReais === 1) {
+      if (entradaAntes && saidaDepois) extrasHorario = 1;
+    } else {
+      if (entradaAntes) extrasHorario += 1;
+      if (saidaDepois) extrasHorario += 1;
+    }
+
     diasCobrados += extrasHorario;
 
-    let pessoasReais = Number(pessoasInput.value);
-    if (!pessoasReais || pessoasReais < 1) pessoasReais = 1;
-
+    const pessoasReais = Number(pessoasInput.value);
     const pessoasCobradas = pessoasReais === 1 ? 2 : pessoasReais;
+
     let valorBase = pessoasCobradas * 50 * diasCobrados;
 
-    if (pessoasReais === 2) valorBase += valorBase * ajusteSegundaPessoa;
+    if (pessoasReais === 2) {
+      valorBase += valorBase * ajusteSegundaPessoa;
+    }
 
     const total = valorBase + (valorBase * ajustePercentualGeral);
 
     totalDiv.textContent = Total a pagar: R$ ${total.toFixed(2).replace('.', ',')};
-    totalDiv.style.display = 'block';
-    infoDiv.style.display = 'block';
+    descontoInfo.style.display = 'block';
+    btnWhatsApp.style.display = 'block';
   }
 
   document.querySelectorAll('input').forEach(el => {
@@ -158,20 +178,20 @@
   });
 
   btnWhatsApp.addEventListener('click', () => {
-    if (totalDiv.style.display === 'none') return; // só envia se já calculou
-
     const mensagem = `Olá! Fiz uma simulação de reserva:
+
 📅 Entrada: ${dataEntradaInput.value} às ${entradaInput.value}
 📅 Saída: ${dataSaidaInput.value} às ${saidaInput.value}
 👥 Pessoas: ${pessoasInput.value}
-💰 Valor total: ${totalDiv.textContent.replace('Total a pagar: ', '')}
+💰 ${totalDiv.textContent}
 
-📸 Favor anexar o print do cálculo`;
+📸 Vou enviar o print do cálculo.`;
 
-    const urlWhatsApp = https://wa.me/5512997791023?text=${encodeURIComponent(mensagem)};
-    window.open(urlWhatsApp, '_blank');
+    const numero = "5512997791023";
+    const url = https://wa.me/${numero}?text=${encodeURIComponent(mensagem)};
+    window.open(url, "_blank");
   });
-
 </script>
+
 </body>
 </html>
