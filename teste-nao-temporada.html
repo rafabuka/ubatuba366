@@ -178,6 +178,15 @@
     el.addEventListener('input', calcularValor);
     el.addEventListener('change', calcularValor);
   });
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const infoDesconto = document.getElementById("info-desconto");
+
+    if (infoDesconto) {
+      infoDesconto.style.cursor = "pointer";
+      infoDesconto.title = "Confirme condições e possíveis descontos pelo WhatsApp";
+    }
+  });
 </script>
 
 </body>
